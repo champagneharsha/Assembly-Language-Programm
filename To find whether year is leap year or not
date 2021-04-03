@@ -1,0 +1,40 @@
+assume ds:data,cs:code						;associating segment register
+data segment							;start of the data segment
+	msg db 0ah,0dh,'enter the year $'			;DATA STORAGE DIRECTIVES
+	number db 6,0,6 dup('$')				;db==define byte
+	ys db 0ah,0dh,'yes,It is a leap year $'
+	n db 0ah,0dh,'no, Not a leap year $'
+data ends							;end of data segment
+
+code segment							;start of code segment
+start:
+	mov ax,seg data						
+	mov ds,ax
+	lea dx,msg						;dx pointing to the input
+	mov ah,09h
+	int 21h							;terminates the process
+
+	lea dx,number
+	mov ah,0ah
+	int 21h
+	lea bx,number+4
+	mov ah,[bx]
+	mov al,[bx+1]
+	aad							;prepares two unpacked BCD digits for a division operation that yields an unpacked result
+	mov bl,04h
+	div bl
+	and ah,0ffh
+	jz yes
+	lea dx,n
+	mov ah,09h
+	int 21h
+	jmp down						
+yes:
+	lea dx,ys
+	mov ah,09h
+	int 21h							;terminates yes process
+down: 
+	mov ah,4ch
+	int 21h							;terminates the down process
+code ends							;end of code segment
+end start 							;end of program
